@@ -55,7 +55,6 @@ class _PlaySessionScreenState extends State<PlaySessionScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
-
     return MultiProvider(
       providers: [
         Provider.value(value: widget.level),

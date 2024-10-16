@@ -5,9 +5,9 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 
+import 'package:flame/flame.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
@@ -33,12 +33,14 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   // Put game into full screen mode on mobile devices.
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  // Lock the game to portrait mode on mobile devices.
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  // // Lock the game to portrait mode on mobile devices.
+  // await SystemChrome.setPreferredOrientations([
+  //   DeviceOrientation.portraitUp,
+  //   DeviceOrientation.portraitDown,
+  // ]);
+  Flame.device.fullScreen();
+  Flame.device.setLandscape();
 
   unawaited(MobileAds.instance.initialize());
 
@@ -63,8 +65,7 @@ class MyApp extends StatelessWidget {
           Provider(create: (context) => Palette()),
           ChangeNotifierProvider(create: (context) => PlayerProgress()),
           // Set up audio.
-          ProxyProvider2<AppLifecycleStateNotifier, SettingsController,
-              AudioController>(
+          ProxyProvider2<AppLifecycleStateNotifier, SettingsController, AudioController>(
             create: (context) => AudioController(),
             update: (context, lifecycleNotifier, settings, audio) {
               audio!.attachDependencies(lifecycleNotifier, settings);
