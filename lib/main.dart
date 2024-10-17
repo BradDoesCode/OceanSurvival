@@ -80,7 +80,7 @@ class MyApp extends StatelessWidget {
           final palette = context.watch<Palette>();
 
           return MaterialApp.router(
-            title: 'My Flutter Game',
+            title: 'Ocean Survival',
             theme: ThemeData.from(
               colorScheme: ColorScheme.fromSeed(
                 seedColor: palette.darkPen,
