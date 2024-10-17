@@ -39,6 +39,7 @@ flutter:
     - assets/sfx/
     - assets/tiles/level-01.tmx
     - assets/Terrain/
+    - assets/images/terrain/
 
   fonts:
     - family: Permanent Marker
