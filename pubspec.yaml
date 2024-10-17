@@ -36,7 +36,6 @@ flutter:
     - assets/images/
     - assets/music/
     - assets/sfx/
-    - assets/main_characters/ninja_frog/
     - assets/tiles/level-01.tmx
     - assets/Terrain/
 

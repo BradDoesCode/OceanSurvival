@@ -10,14 +10,14 @@ class Player extends SpriteAnimationGroupComponent with HasGameRef<OceanSurvival
   final double stepTime = 0.05;
 
   @override
-  FutureOr<void> onLoad() {
-    _loadAnimations();
+  FutureOr<void> onLoad() async {
+    await _loadAnimations();
     return super.onLoad();
   }
 
-  void _loadAnimations() {
+  Future<void> _loadAnimations() async {
     idle = SpriteAnimation.fromFrameData(
-      await game.images.load('assets/main_characters/ninja_frog/idle.png'),
+      game.images.fromCache('main_characters/ninja_frog/idle.png'),
       SpriteAnimationData.sequenced(
         amount: 11,
         stepTime: stepTime,
