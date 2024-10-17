@@ -37,6 +37,8 @@ flutter:
     - assets/music/
     - assets/sfx/
     - assets/main_characters/ninja_frog/
+    - assets/tiles/level-01.tmx
+    - assets/Terrain/
 
   fonts:
     - family: Permanent Marker

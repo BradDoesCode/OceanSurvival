@@ -17,7 +17,7 @@ class Player extends SpriteAnimationGroupComponent with HasGameRef<OceanSurvival
 
   void _loadAnimations() {
     idle = SpriteAnimation.fromFrameData(
-      game.images.fromCache('main_characters/ninja_frog/idle.png'),
+      await game.images.load('assets/main_characters/ninja_frog/idle.png'),
       SpriteAnimationData.sequenced(
         amount: 11,
         stepTime: stepTime,
