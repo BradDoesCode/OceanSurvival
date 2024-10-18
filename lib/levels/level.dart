@@ -6,11 +6,11 @@ import 'package:ocean_survival/actors/player.dart';
 
 class Level extends World {
   late TiledComponent level;
-  Level({required this.name});
+  Level({required this.name, required this.player});
   final String name;
+  final Player player;
   @override
   FutureOr<void> onLoad() async {
-    //TODO: Create a very simple level in tiled and save it in the assets folder
     level = await TiledComponent.load(name, Vector2.all(16.0));
 
     add(level);
@@ -18,9 +18,7 @@ class Level extends World {
     for (final spawnPoint in spawnPointsLayer!.objects) {
       switch (spawnPoint.type) {
         case 'Player':
-          add(Player(
-              position: Vector2(spawnPoint.x, spawnPoint.y),
-              character: 'ninja_frog'));
+          add(player..position = spawnPoint.position);
           break;
         default:
           break;

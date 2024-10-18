@@ -6,10 +6,12 @@ import 'dart:async';
 import 'dart:developer' as dev;
 
 import 'package:flame/flame.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:logging/logging.dart';
+import 'package:ocean_survival/ocean_survival.dart';
 import 'package:provider/provider.dart';
 
 import 'app_lifecycle/app_lifecycle.dart';
@@ -39,8 +41,8 @@ void main() async {
   //   DeviceOrientation.portraitUp,
   //   DeviceOrientation.portraitDown,
   // ]);
-  Flame.device.fullScreen();
-  Flame.device.setLandscape();
+  await Flame.device.fullScreen();
+  await Flame.device.setLandscape();
 
   unawaited(MobileAds.instance.initialize());
 
@@ -52,61 +54,63 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppLifecycleObserver(
-      child: MultiProvider(
-        // This is where you add objects that you want to have available
-        // throughout your game.
-        //
-        // Every widget in the game can access these objects by calling
-        // `context.watch()` or `context.read()`.
-        // See `lib/main_menu/main_menu_screen.dart` for example usage.
-        providers: [
-          Provider(create: (context) => SettingsController()),
-          Provider(create: (context) => Palette()),
-          ChangeNotifierProvider(create: (context) => PlayerProgress()),
-          // Set up audio.
-          ProxyProvider2<AppLifecycleStateNotifier, SettingsController, AudioController>(
-            create: (context) => AudioController(),
-            update: (context, lifecycleNotifier, settings, audio) {
-              audio!.attachDependencies(lifecycleNotifier, settings);
-              return audio;
-            },
-            dispose: (context, audio) => audio.dispose(),
-            // Ensures that music starts immediately.
-            lazy: false,
-          ),
-        ],
-        child: Builder(builder: (context) {
-          final palette = context.watch<Palette>();
-
-          return MaterialApp.router(
-            title: 'Ocean Survival',
-            theme: ThemeData.from(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: palette.darkPen,
-                surface: palette.backgroundMain,
-              ),
-              textTheme: TextTheme(
-                bodyMedium: TextStyle(color: palette.ink),
-              ),
-              useMaterial3: true,
-            ).copyWith(
-              // Make buttons more fun.
-              filledButtonTheme: FilledButtonThemeData(
-                style: FilledButton.styleFrom(
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
+    return (kDebugMode)
+        ? GameWidget(game: OceanSurvival())
+        : AppLifecycleObserver(
+            child: MultiProvider(
+              // This is where you add objects that you want to have available
+              // throughout your game.
+              //
+              // Every widget in the game can access these objects by calling
+              // `context.watch()` or `context.read()`.
+              // See `lib/main_menu/main_menu_screen.dart` for example usage.
+              providers: [
+                Provider(create: (context) => SettingsController()),
+                Provider(create: (context) => Palette()),
+                ChangeNotifierProvider(create: (context) => PlayerProgress()),
+                // Set up audio.
+                ProxyProvider2<AppLifecycleStateNotifier, SettingsController, AudioController>(
+                  create: (context) => AudioController(),
+                  update: (context, lifecycleNotifier, settings, audio) {
+                    audio!.attachDependencies(lifecycleNotifier, settings);
+                    return audio;
+                  },
+                  dispose: (context, audio) => audio.dispose(),
+                  // Ensures that music starts immediately.
+                  lazy: false,
                 ),
-              ),
+              ],
+              child: Builder(builder: (context) {
+                final palette = context.watch<Palette>();
+
+                return MaterialApp.router(
+                  title: 'Ocean Survival',
+                  theme: ThemeData.from(
+                    colorScheme: ColorScheme.fromSeed(
+                      seedColor: palette.darkPen,
+                      surface: palette.backgroundMain,
+                    ),
+                    textTheme: TextTheme(
+                      bodyMedium: TextStyle(color: palette.ink),
+                    ),
+                    useMaterial3: true,
+                  ).copyWith(
+                    // Make buttons more fun.
+                    filledButtonTheme: FilledButtonThemeData(
+                      style: FilledButton.styleFrom(
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  routeInformationProvider: router.routeInformationProvider,
+                  routeInformationParser: router.routeInformationParser,
+                  routerDelegate: router.routerDelegate,
+                );
+              }),
             ),
-            routeInformationProvider: router.routeInformationProvider,
-            routeInformationParser: router.routeInformationParser,
-            routerDelegate: router.routerDelegate,
           );
-        }),
-      ),
-    );
   }
 }
