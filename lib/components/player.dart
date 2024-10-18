@@ -6,9 +6,8 @@ import 'package:ocean_survival/ocean_survival.dart';
 
 enum PlayerState { idle, running, falling, jumping, doubleJump, wallJump, hit }
 
-enum PlayerDirection { left, right, up, down, none }
-
-class Player extends SpriteAnimationGroupComponent with HasGameRef<OceanSurvival>, KeyboardHandler {
+class Player extends SpriteAnimationGroupComponent
+    with HasGameRef<OceanSurvival>, KeyboardHandler {
   String character;
   Player({super.position, this.character = 'ninja_frog'});
 
@@ -20,12 +19,12 @@ class Player extends SpriteAnimationGroupComponent with HasGameRef<OceanSurvival
   late final SpriteAnimation wallJump;
   late final SpriteAnimation hit;
 
-  PlayerDirection direction = PlayerDirection.none;
   double stepTime = 0.05;
+  double horizontalMovement = 0;
+  double verticalMovement = 0;
   double speed = 100;
   // veocity used to upgrade the speed of the player
   Vector2 velocity = Vector2.zero();
-  bool isFacingRight = true;
   bool isStanding = true;
   @override
   FutureOr<void> onLoad() async {
@@ -35,29 +34,26 @@ class Player extends SpriteAnimationGroupComponent with HasGameRef<OceanSurvival
 
   @override
   void update(double dt) {
+    _updatePlayerState();
     _updatePlayerMovement(dt);
     super.update(dt);
   }
 
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    final isLeftKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowLeft) || keysPressed.contains(LogicalKeyboardKey.keyA);
+    horizontalMovement = 0;
+    verticalMovement = 0;
+    final isLeftKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowLeft);
     final isRightKeyPressed =
-        keysPressed.contains(LogicalKeyboardKey.arrowRight) || keysPressed.contains(LogicalKeyboardKey.keyD);
-    final isUpKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowUp) || keysPressed.contains(LogicalKeyboardKey.keyW);
-    final isDownKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowDown) || keysPressed.contains(LogicalKeyboardKey.keyS);
+        keysPressed.contains(LogicalKeyboardKey.arrowRight);
+    final isUpKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowUp);
+    final isDownKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowDown);
 
-    if (isLeftKeyPressed && !isRightKeyPressed) {
-      direction = PlayerDirection.left;
-    } else if (isRightKeyPressed && !isLeftKeyPressed) {
-      direction = PlayerDirection.right;
-    } else if (isUpKeyPressed && !isDownKeyPressed) {
-      direction = PlayerDirection.up;
-    } else if (isDownKeyPressed && !isUpKeyPressed) {
-      direction = PlayerDirection.down;
-    } else {
-      direction = PlayerDirection.none;
-    }
+    horizontalMovement += isLeftKeyPressed ? -1 : 0;
+    horizontalMovement += isRightKeyPressed ? 1 : 0;
+    verticalMovement += isUpKeyPressed ? -1 : 0;
+    verticalMovement += isDownKeyPressed ? 1 : 0;
+    //this seems inverted on a mobile emulator that is rotated.
     return super.onKeyEvent(event, keysPressed);
   }
 
@@ -96,51 +92,38 @@ class Player extends SpriteAnimationGroupComponent with HasGameRef<OceanSurvival
     );
   }
 
-  void _updatePlayerMovement(double dt) {
-    double directionX = 0.0;
-    double directionY = 0.0;
-    switch (direction) {
-      case PlayerDirection.left:
-        if (isFacingRight) {
-          flipHorizontallyAroundCenter();
-          isFacingRight = false;
-        }
-        current = PlayerState.running;
-        directionX -= speed;
-        break;
-      case PlayerDirection.right:
-        if (!isFacingRight) {
-          flipHorizontallyAroundCenter();
-          isFacingRight = true;
-        }
-        current = PlayerState.running;
-        directionX += speed;
-        break;
-      case PlayerDirection.up:
-        if (!isStanding) {
-          flipVerticallyAroundCenter();
-          isStanding = true;
-        }
-        current = PlayerState.running;
-        directionY -= speed;
-        break;
-      case PlayerDirection.down:
-        if (isStanding) {
-          flipVerticallyAroundCenter();
-          isStanding = false;
-        }
-        current = PlayerState.running;
-        directionY += speed;
-        break;
-      case PlayerDirection.none:
-        if (!isStanding) {
-          flipVerticallyAroundCenter();
-          isStanding = true;
-        }
-        current = PlayerState.idle;
-        break;
+  void _updatePlayerState() {
+    PlayerState playerState = PlayerState.idle;
+    if (velocity.y > 0 && scale.y > 0) {
+      // If moving down but facing up, face down
+      flipVerticallyAroundCenter();
+    } else if (velocity.y < 0 && scale.y < 0) {
+      // If moving up but facing down, face up
+      flipVerticallyAroundCenter();
     }
-    velocity = Vector2(directionX, directionY);
-    position += velocity * dt;
+
+    // Check for horizontal movement
+    if ((velocity.x > 0 || velocity.x < 0) && velocity.y == 0) {
+      // If moving left or right and not moving down, face up
+      if (scale.y < 0) {
+        flipVerticallyAroundCenter();
+      }
+    }
+
+    // If moving the player should be set to swim
+    if (velocity.x != 0 || velocity.y != 0) {
+      playerState = PlayerState.running;
+      // Add when we have a swim animation
+      // playerState = PlayerState.swimming;
+    }
+    current = playerState;
+  }
+
+  void _updatePlayerMovement(double dt) {
+    velocity.x = horizontalMovement * speed;
+    velocity.y = verticalMovement * speed;
+    //velocity = Vector2(directionX, directionY);
+    position.x += velocity.x * dt;
+    position.y += velocity.y * dt;
   }
 }

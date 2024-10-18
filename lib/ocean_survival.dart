@@ -48,31 +48,31 @@ class OceanSurvival extends FlameGame with HasKeyboardHandlerComponents, DragCal
   void updateJoystickDirection(JoystickComponent joystick, Player player) {
     switch (joystick.direction) {
       case JoystickDirection.up:
-        player.direction = PlayerDirection.up;
+        //player.direction = PlayerDirection.up;
         break;
       case JoystickDirection.upLeft:
-        player.direction = PlayerDirection.up;
+        //player.direction = PlayerDirection.up;
         break;
       case JoystickDirection.upRight:
-        player.direction = PlayerDirection.up;
+       // player.direction = PlayerDirection.up;
         break;
       case JoystickDirection.downLeft:
-        player.direction = PlayerDirection.down;
+        //player.direction = PlayerDirection.down;
         break;
       case JoystickDirection.downRight:
-        player.direction = PlayerDirection.down;
+        //player.direction = PlayerDirection.down;
         break;
       case JoystickDirection.down:
-        player.direction = PlayerDirection.down;
+        //player.direction = PlayerDirection.down;
         break;
       case JoystickDirection.left:
-        player.direction = PlayerDirection.left;
+        //player.direction = PlayerDirection.left;
         break;
       case JoystickDirection.right:
-        player.direction = PlayerDirection.right;
+        //player.direction = PlayerDirection.right;
         break;
       case JoystickDirection.idle:
-        player.direction = PlayerDirection.none;
+        //player.direction = PlayerDirection.none;
 
         break;
     }
