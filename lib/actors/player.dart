@@ -133,6 +133,10 @@ class Player extends SpriteAnimationGroupComponent with HasGameRef<OceanSurvival
         directionY += speed;
         break;
       case PlayerDirection.none:
+        if (!isStanding) {
+          flipVerticallyAroundCenter();
+          isStanding = true;
+        }
         current = PlayerState.idle;
         break;
     }

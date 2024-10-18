@@ -13,6 +13,9 @@ class OceanSurvival extends FlameGame with HasKeyboardHandlerComponents, DragCal
   bool showJoystick = true;
 
   @override
+  backgroundColor() => const Color.fromARGB(255, 86, 86, 240);
+
+  @override
   Future<void> onLoad() async {
     // Load all assets here
     await images.loadAllImages();
@@ -20,7 +23,10 @@ class OceanSurvival extends FlameGame with HasKeyboardHandlerComponents, DragCal
     cam = CameraComponent.withFixedResolution(world: level, width: 640, height: 360);
     cam.viewfinder.anchor = Anchor.topLeft;
     addAll([cam, level]);
-    if (showJoystick) addJoystick();
+    if (showJoystick) {
+      joystick = addJoystick();
+      cam.viewport.add(joystick);
+    }
     return super.onLoad();
   }
 
@@ -30,14 +36,13 @@ class OceanSurvival extends FlameGame with HasKeyboardHandlerComponents, DragCal
     super.update(dt);
   }
 
-  void addJoystick() {
-    joystick = JoystickComponent(
+  JoystickComponent addJoystick() {
+    return JoystickComponent(
       knob: SpriteComponent.fromImage(images.fromCache('hud/knob.png')),
       background: SpriteComponent.fromImage(images.fromCache('hud/joystick.png')),
       margin: EdgeInsets.only(left: 32, bottom: 32),
       priority: 1,
     );
-    add(joystick);
   }
 
   void updateJoystickDirection(JoystickComponent joystick, Player player) {
