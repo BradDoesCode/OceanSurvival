@@ -2,9 +2,9 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/painting.dart';
-import 'package:ocean_survival/actors/player.dart';
+import 'package:ocean_survival/components/player.dart';
 
-import 'levels/level.dart';
+import 'components/level.dart';
 
 class OceanSurvival extends FlameGame with HasKeyboardHandlerComponents, DragCallbacks {
   late final CameraComponent cam;
