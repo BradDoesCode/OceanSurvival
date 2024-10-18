@@ -15,15 +15,34 @@ class Level extends World {
 
     add(level);
     final spawnPointsLayer = level.tileMap.getLayer<ObjectGroup>('spawnPoints');
-    for (final spawnPoint in spawnPointsLayer!.objects) {
-      switch (spawnPoint.type) {
-        case 'Player':
-          add(player..position = spawnPoint.position);
-          break;
-        default:
-          break;
+    if (spawnPointsLayer != null) {
+      for (final spawnPoint in spawnPointsLayer.objects) {
+        switch (spawnPoint.type) {
+          case 'Player':
+            add(player..position = spawnPoint.position);
+            break;
+          default:
+            break;
+        }
       }
     }
+
+    final collisionsLayer = level.tileMap.getLayer<ObjectGroup>('collisions');
+    if (collisionsLayer != null) {
+      for (final collision in collisionsLayer.objects) {
+        switch (collision.class_) {
+          case 'platform': //lader
+            final platform = CollisionBlock(
+              position: Vector2(collision.x, collision.y),
+              size: Vector2(collision.width, collision.height),
+              isPlatform: true,
+            );
+            break;
+          default:
+        }
+      }
+    }
+
     return super.onLoad();
   }
 }
