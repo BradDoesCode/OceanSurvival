@@ -108,6 +108,8 @@ class Player extends SpriteAnimationGroupComponent
     );
   }
 
+
+
   void _updatePlayerState() {
     PlayerState playerState = PlayerState.idle;
     if (velocity.y > _gravity && !isOnGround) {
