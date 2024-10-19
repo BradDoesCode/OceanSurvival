@@ -11,6 +11,7 @@ class Level extends World {
   final String name;
   final Player player;
   List<CollisionBlock> collisionBlocks = [];
+  final size = Vector2(1000, 1000);
 
   @override
   FutureOr<void> onLoad() async {
@@ -31,7 +32,7 @@ class Level extends World {
     }
 
     final collisionsLayer = level.tileMap.getLayer<ObjectGroup>('collisions');
-    
+
     if (collisionsLayer != null) {
       for (final collision in collisionsLayer.objects) {
         switch (collision.class_) {
@@ -54,7 +55,6 @@ class Level extends World {
         }
       }
     }
-    player.collisionBlocks = collisionBlocks;
     return super.onLoad();
   }
 }

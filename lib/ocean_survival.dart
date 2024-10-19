@@ -6,8 +6,7 @@ import 'package:ocean_survival/components/player.dart';
 
 import 'components/level.dart';
 
-class OceanSurvival extends FlameGame
-    with HasKeyboardHandlerComponents, DragCallbacks {
+class OceanSurvival extends FlameGame with DragCallbacks {
   late final CameraComponent cam;
   late JoystickComponent joystick;
   Player player = Player();
@@ -23,7 +22,7 @@ class OceanSurvival extends FlameGame
     final level = Level(name: 'level-01.tmx', player: player);
     cam = CameraComponent.withFixedResolution(
         world: level, width: 640, height: 360);
-    cam.viewfinder.anchor = Anchor.topLeft;
+    cam.viewfinder.anchor = Anchor.center;
     addAll([cam, level]);
     if (showJoystick) {
       joystick = addJoystick();
@@ -34,7 +33,10 @@ class OceanSurvival extends FlameGame
 
   @override
   void update(double dt) {
-    if (showJoystick) updateJoystickDirection(joystick, player);
+    if (showJoystick) updateJoystickDirection(joystick, player, dt);
+    // follow the player
+    cam.viewfinder.position = player.position;
+
     super.update(dt);
   }
 
@@ -48,49 +50,12 @@ class OceanSurvival extends FlameGame
     );
   }
 
-  void updateJoystickDirection(JoystickComponent joystick, Player player) {
-    switch (joystick.direction) {
-      case JoystickDirection.up:
-        player.verticalMovement = -1;
-        //player.direction = PlayerDirection.up;
-        break;
-      case JoystickDirection.upLeft:
-        player.horizontalMovement = -1;
-        player.verticalMovement = -1;
-        //player.direction = PlayerDirection.up;
-        break;
-      case JoystickDirection.upRight:
-        player.horizontalMovement = 1;
-        player.verticalMovement = -1;
-        // player.direction = PlayerDirection.up;
-        break;
-      case JoystickDirection.downLeft:
-        player.horizontalMovement = -1;
-        player.verticalMovement = 1;
-        //player.direction = PlayerDirection.down;
-        break;
-      case JoystickDirection.downRight:
-        player.horizontalMovement = 1;
-        player.verticalMovement = 1;
-        //player.direction = PlayerDirection.down;
-        break;
-      case JoystickDirection.down:
-        player.verticalMovement = 1;
-        //player.direction = PlayerDirection.down;
-        break;
-      case JoystickDirection.left:
-        player.horizontalMovement = -1;
-        //player.direction = PlayerDirection.left;
-        break;
-      case JoystickDirection.right:
-        player.horizontalMovement = 1;
-        //player.direction = PlayerDirection.right;
-        break;
-      case JoystickDirection.idle:
-        //player.direction = PlayerDirection.none;
-        player.horizontalMovement = 0;
-        player.verticalMovement = 0;
-        break;
-    }
+  void updateJoystickDirection(
+      JoystickComponent joystick, Player player, double dt) {
+    final double inputX = joystick.delta.x;
+    final double inputY = joystick.delta.y;
+    final double x = inputX * player.speed * dt;
+    final double y = inputY * player.speed * dt;
+    player.move(Vector2(x, y), dt);
   }
 }

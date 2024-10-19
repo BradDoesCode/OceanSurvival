@@ -1,21 +1,17 @@
 import 'dart:async';
 
-import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:flutter/services.dart';
-import 'package:ocean_survival/components/collision_block.dart';
-import 'package:ocean_survival/components/player_hitbox.dart';
-import 'package:ocean_survival/components/utils.dart';
+import 'package:ocean_survival/mixins/movable.dart';
 import 'package:ocean_survival/ocean_survival.dart';
 
 enum PlayerState { idle, running, falling, jumping, doubleJump, wallJump, hit }
 
 class Player extends SpriteAnimationGroupComponent
-    with HasGameRef<OceanSurvival>, KeyboardHandler {
+    with HasGameRef<OceanSurvival>, Movable {
   String character;
 
   Player({super.position, this.character = 'ninja_frog'});
-
+  final stepTime = 0.05;
   late final SpriteAnimation idle;
   late final SpriteAnimation running;
   late final SpriteAnimation falling;
@@ -24,65 +20,18 @@ class Player extends SpriteAnimationGroupComponent
   late final SpriteAnimation wallJump;
   late final SpriteAnimation hit;
 
-  final double _gravity = 9.8;
-  final double jumpForce = 100;
-  final double terminalVelocity = 300;
-  double stepTime = 0.05;
-  double horizontalMovement = 0;
-  double verticalMovement = 0;
-  double speed = 100;
-  bool inWater = false;
-  bool hasJumped = false;
-  PlayerHitbox hitbox = PlayerHitbox(
-    offsetX: 9,
-    offsetY: 8,
-    width: 14,
-    height: 24,
-  );
-  // veocity used to upgrade the speed of the player
-  Vector2 velocity = Vector2.zero();
-  bool isStanding = true;
-  bool isOnGround = false;
-  List<CollisionBlock> collisionBlocks = [];
-
   @override
   FutureOr<void> onLoad() async {
     await _loadAnimations();
     debugMode = true;
-    add(RectangleHitbox(
-      position: Vector2(hitbox.offsetX, hitbox.offsetY),
-      size: Vector2(hitbox.width, hitbox.height),
-    ));
     return super.onLoad();
   }
 
   @override
   void update(double dt) {
-    _updatePlayerState();
-    _updatePlayerMovement(dt);
-    _checkHorizontalColl();
-    if (!inWater) _applyGravity(dt);
-    _checkVerticalColl();
+    current = _updatePlayerState();
+    _flipPlayer();
     super.update(dt);
-  }
-
-  @override
-  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    horizontalMovement = 0;
-    verticalMovement = 0;
-    final isLeftKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowLeft);
-    final isRightKeyPressed =
-        keysPressed.contains(LogicalKeyboardKey.arrowRight);
-    final isUpKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowUp);
-    final isDownKeyPressed = keysPressed.contains(LogicalKeyboardKey.arrowDown);
-
-    horizontalMovement += isLeftKeyPressed ? -1 : 0;
-    horizontalMovement += isRightKeyPressed ? 1 : 0;
-    verticalMovement += isUpKeyPressed ? -1 : 0;
-    verticalMovement += isDownKeyPressed ? 1 : 0;
-    hasJumped = keysPressed.contains(LogicalKeyboardKey.space);
-    //this seems inverted on a mobile emulator that is rotated.
-    return super.onKeyEvent(event, keysPressed);
   }
 
   Future<void> _loadAnimations() async {
@@ -104,8 +53,6 @@ class Player extends SpriteAnimationGroupComponent
       PlayerState.wallJump: wallJump,
       PlayerState.hit: hit,
     };
-
-    // set the default animation
     current = PlayerState.idle;
   }
 
@@ -120,97 +67,24 @@ class Player extends SpriteAnimationGroupComponent
     );
   }
 
-  void _updatePlayerState() {
-    PlayerState playerState = PlayerState.idle;
-    if (velocity.y > _gravity && !isOnGround) {
-      playerState = PlayerState.falling;
+  bool isMoving() {
+    return gameRef.joystick.delta.length > 0;
+  }
+
+  PlayerState _updatePlayerState() {
+    if (isMoving()) {
+      return PlayerState.running;
     }
-    if (velocity.y < 0) {
-      playerState = PlayerState.jumping;
-    }
-    if (velocity.x < 0 && scale.x > 0) {
+    return PlayerState.idle;
+  }
+
+  void _flipPlayer() {
+    if (gameRef.joystick.delta.x < 0 && isFacingRight) {
       flipHorizontallyAroundCenter();
-    } else if (velocity.x > 0 && scale.x < 0) {
+      isFacingRight = false;
+    } else if (gameRef.joystick.delta.x > 0 && !isFacingRight) {
       flipHorizontallyAroundCenter();
-    }
-
-    // Check for horizontal movement
-    if ((velocity.x > 0 || velocity.x < 0) && velocity.y == 0) {
-      // If moving left or right and not moving down, face up
-      if (scale.y < 0) {
-        flipVerticallyAroundCenter();
-      }
-    }
-
-    // If moving the player should be set to swim
-    if (velocity.x != 0 || velocity.y != 0) {
-      playerState = PlayerState.running;
-      // Add when we have a swim animation
-      // playerState = PlayerState.swimming;
-    }
-    current = playerState;
-  }
-
-  void _updatePlayerMovement(double dt) {
-    if (hasJumped && isOnGround) {
-      velocity.y = -jumpForce;
-      isOnGround = false;
-      hasJumped = false;
-    }
-
-    velocity.x = horizontalMovement * speed;
-    velocity.y = verticalMovement * speed;
-    //velocity = Vector2(directionX, directionY);
-    position.x += velocity.x * dt;
-    position.y += velocity.y * dt;
-  }
-
-  void _checkHorizontalColl() {
-    for (final block in collisionBlocks) {
-      if (!block.isPlatform) {
-        if (checkCollision(this, block)) {
-          if (velocity.x > 0) {
-            velocity.x = 0;
-            position.x = block.x - hitbox.offsetX - hitbox.width;
-          }
-          if (velocity.x < 0) {
-            velocity.x = 0;
-            position.x = block.x + block.width - hitbox.offsetX;
-          }
-        }
-      }
-    }
-  }
-
-  void _applyGravity(double dt) {
-    velocity.y += _gravity * dt;
-    velocity.y = velocity.y.clamp(jumpForce, terminalVelocity);
-    position.y += velocity.y * dt;
-  }
-
-  void _checkVerticalColl() {
-    for (final block in collisionBlocks) {
-      if (block.isPlatform) {
-        if (checkCollision(this, block)) {
-          if (velocity.y > 0) {
-            velocity.y = 0;
-            position.y = block.y - hitbox.height - hitbox.offsetY;
-            isOnGround = true;
-          }
-        }
-      } else {
-        if (checkCollision(this, block)) {
-          if (velocity.y > 0) {
-            velocity.y = 0;
-            position.y = block.y - hitbox.height - hitbox.offsetY;
-            isOnGround = true;
-          }
-          if (velocity.y < 0) {
-            velocity.y = 0;
-            position.y = block.y + block.height - hitbox.offsetY;
-          }
-        }
-      }
+      isFacingRight = true;
     }
   }
 }
