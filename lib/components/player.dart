@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:ocean_survival/components/collision_block.dart';
+import 'package:ocean_survival/components/player_hitbox.dart';
 import 'package:ocean_survival/components/utils.dart';
 import 'package:ocean_survival/ocean_survival.dart';
 
@@ -31,6 +33,12 @@ class Player extends SpriteAnimationGroupComponent
   double speed = 100;
   bool inWater = false;
   bool hasJumped = false;
+  PlayerHitbox hitbox = PlayerHitbox(
+    offsetX: 9,
+    offsetY: 8,
+    width: 14,
+    height: 24,
+  );
   // veocity used to upgrade the speed of the player
   Vector2 velocity = Vector2.zero();
   bool isStanding = true;
@@ -41,6 +49,10 @@ class Player extends SpriteAnimationGroupComponent
   FutureOr<void> onLoad() async {
     await _loadAnimations();
     debugMode = true;
+    add(RectangleHitbox(
+      position: Vector2(hitbox.offsetX, hitbox.offsetY),
+      size: Vector2(hitbox.width, hitbox.height),
+    ));
     return super.onLoad();
   }
 
@@ -108,8 +120,6 @@ class Player extends SpriteAnimationGroupComponent
     );
   }
 
-
-
   void _updatePlayerState() {
     PlayerState playerState = PlayerState.idle;
     if (velocity.y > _gravity && !isOnGround) {
@@ -161,11 +171,11 @@ class Player extends SpriteAnimationGroupComponent
         if (checkCollision(this, block)) {
           if (velocity.x > 0) {
             velocity.x = 0;
-            position.x = block.x - width;
+            position.x = block.x - hitbox.offsetX - hitbox.width;
           }
           if (velocity.x < 0) {
             velocity.x = 0;
-            position.x = block.x + block.width + width;
+            position.x = block.x + block.width - hitbox.offsetX;
           }
         }
       }
@@ -184,7 +194,7 @@ class Player extends SpriteAnimationGroupComponent
         if (checkCollision(this, block)) {
           if (velocity.y > 0) {
             velocity.y = 0;
-            position.y = block.y - height;
+            position.y = block.y - hitbox.height - hitbox.offsetY;
             isOnGround = true;
           }
         }
@@ -192,12 +202,12 @@ class Player extends SpriteAnimationGroupComponent
         if (checkCollision(this, block)) {
           if (velocity.y > 0) {
             velocity.y = 0;
-            position.y = block.y - height;
+            position.y = block.y - hitbox.height - hitbox.offsetY;
             isOnGround = true;
           }
           if (velocity.y < 0) {
             velocity.y = 0;
-            position.y = block.y + block.height;
+            position.y = block.y + block.height - hitbox.offsetY;
           }
         }
       }
