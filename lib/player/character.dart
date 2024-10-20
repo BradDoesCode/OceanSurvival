@@ -12,7 +12,7 @@ abstract class Character extends SpriteAnimationGroupComponent<PlayerState>
     with HasGameRef<OceanSurvival>, Movable, CollisionCallbacks {
   final stepTime = 0.05;
   late RectangleHitbox hitbox;
-  final double hitboxOffsetX = 8;
+  final double hitboxOffsetX = 0; // Assuming you have this defined somewhere
   final double hitboxOffsetY = 8;
   final double hitboxWidth = 16;
   final double hitboxHeight = 19;
@@ -20,29 +20,34 @@ abstract class Character extends SpriteAnimationGroupComponent<PlayerState>
   @override
   FutureOr<void> onLoad() {
     loadAnimations();
-    add(hitbox = RectangleHitbox(
-        position: Vector2(hitboxOffsetX, hitboxOffsetY),
-        size: Vector2(hitboxWidth, hitboxHeight),
-        collisionType: CollisionType.active));
+    hitbox = RectangleHitbox(
+      position: Vector2(hitboxOffsetX, hitboxOffsetY),
+      size: Vector2(hitboxWidth, hitboxHeight),
+      collisionType: CollisionType.active,
+    );
+    add(hitbox);
 
     return super.onLoad();
+  }
+
+  @override
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+    print(intersectionPoints);
   }
 
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
     if (other is CollisionBlock) {
-      if (other.isPlatform) {
-        position = position.clone()..y = other.position.y - size.y;
+      final direction = intersectionPoints.first;
+      final dx = intersectionPoints.first.x - position.x + hitboxOffsetX;
+      final dy = intersectionPoints.first.y - position.y;
+      if (dx > dy) {
+        print('Horizontal collision');
       } else {
-        // hitting left side of wall
-        if (hitbox.position.x < other.position.x) {
-          position = position.clone()
-            ..x = other.position.x - size.x + hitboxOffsetX;
-        } else {
-          position = position.clone()
-            ..x = other.position.x + other.size.x + hitboxWidth + hitboxOffsetX;
-        }
+        print('Vertical collision');
       }
     }
   }
