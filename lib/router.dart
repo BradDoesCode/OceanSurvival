@@ -6,7 +6,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ocean_survival/ocean_survival.dart';
+import 'package:ocean_survival/game/ocean_survival.dart';
 import 'package:provider/provider.dart';
 
 import 'game_internals/score.dart';

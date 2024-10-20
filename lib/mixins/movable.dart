@@ -10,9 +10,9 @@ mixin Movable on PositionComponent {
   bool isOnGround = true;
 
   void move(Vector2 delta, double dt) {
-    velocity.x = delta.x * (speed * dt);
+    velocity.x = delta.x * speed * dt;
     if (isOnGround) {
-      velocity.y = delta.y * (speed * dt);
+      velocity.y = delta.y * speed * dt;
     } else {
       _applyGravity(dt);
     }
@@ -34,10 +34,6 @@ mixin Movable on PositionComponent {
     velocity.y += gravity * dt;
     velocity.y = velocity.y.clamp(-terminalVelocity, terminalVelocity);
     position.y += velocity.y * dt;
-  }
-
-  void setVelocity(Vector2 newVelocity) {
-    velocity = newVelocity;
   }
 
   void updatePosition(double dt) {

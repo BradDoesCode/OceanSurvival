@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flame/components.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:ocean_survival/components/collision_block.dart';
-import 'package:ocean_survival/components/player.dart';
+import 'package:ocean_survival/player/player.dart';
 
 class Level extends World {
   late TiledComponent level;
@@ -23,7 +23,8 @@ class Level extends World {
       for (final spawnPoint in spawnPointsLayer.objects) {
         switch (spawnPoint.type) {
           case 'Player':
-            add(player..position = spawnPoint.position);
+            player.character.position = spawnPoint.position;
+            add(player.character);
             break;
           default:
             break;
@@ -49,7 +50,9 @@ class Level extends World {
             final block = CollisionBlock(
               position: Vector2(collision.x, collision.y),
               size: Vector2(collision.width, collision.height),
+              isPlatform: false,
             );
+
             collisionBlocks.add(block);
             add(block); //to see in debug mode
         }
