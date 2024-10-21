@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:ocean_survival/components/collision_block.dart';
 import 'package:ocean_survival/game/ocean_survival.dart';
 import 'package:ocean_survival/mixins/movable.dart';
 
@@ -40,15 +39,48 @@ abstract class Character extends SpriteAnimationGroupComponent<PlayerState>
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
-    if (other is CollisionBlock) {
-      final direction = intersectionPoints.first;
-      final dx = intersectionPoints.first.x - position.x + hitboxOffsetX;
-      final dy = intersectionPoints.first.y - position.y;
-      if (dx > dy) {
-        print('Horizontal collision');
+    if (intersectionPoints.length == 2) {
+      var pointA = intersectionPoints.elementAt(0);
+      var pointB = intersectionPoints.elementAt(1);
+      final mid = (pointA + pointB) / 2;
+      final collisionVector = absoluteCenter - mid;
+      if (pointA.x == pointB.x || pointA.y == pointB.y) {
+        // Hitting a side without touching a corner
+        double penetrationDepth = (hitbox.size.x / 2) - collisionVector.length;
+        collisionVector.normalize();
+        position += collisionVector.scaled(penetrationDepth);
       } else {
-        print('Vertical collision');
+        position += _cornerBumpDistance(collisionVector, pointA, pointB);
       }
+    }
+  }
+
+  Vector2 _cornerBumpDistance(
+      Vector2 directionVector, Vector2 pointA, Vector2 pointB) {
+    var dX = pointA.x - pointB.x;
+    var dY = pointA.y - pointB.y;
+    // The order of the two intersection points differs per corner
+    // The following if statements negates the necessary values to make the
+    // player move back to the right position
+    if (directionVector.x > 0 && directionVector.y < 0) {
+      // Top right corner
+      dX = -dX;
+    } else if (directionVector.x > 0 && directionVector.y > 0) {
+      // Bottom right corner
+      dX = -dX;
+    } else if (directionVector.x < 0 && directionVector.y > 0) {
+      // Bottom left corner
+      dY = -dY;
+    } else if (directionVector.x < 0 && directionVector.y < 0) {
+      // Top left corner
+      dY = -dY;
+    }
+    // The absolute smallest of both values determines from which side the player bumps
+    // and therefor determines the needed displacement
+    if (dX.abs() < dY.abs()) {
+      return Vector2(dX, 0);
+    } else {
+      return Vector2(0, dY);
     }
   }
 

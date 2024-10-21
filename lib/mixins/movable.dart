@@ -5,18 +5,29 @@ mixin Movable on PositionComponent {
   double jump = -100;
   Vector2 velocity = Vector2.zero();
   bool isFacingRight = true;
-  double terminalVelocity = 100;
-  double gravity = 9.8;
+  double waterDrag = 0.95;
+  double buoyancy = -5;
   bool isOnGround = true;
+  Vector2? previousPosition;
 
   void move(Vector2 delta, double dt) {
-    velocity.x = delta.x * speed * dt;
-    if (isOnGround) {
+    // Apply joystick input to velocity
+    if (delta.length > 0) {
+      velocity.x = delta.x * speed * dt * waterDrag;
       velocity.y = delta.y * speed * dt;
     } else {
-      _applyGravity(dt);
+      // Apply water drag to slow down gradually
+      velocity.x *= waterDrag;
+      velocity.y *= waterDrag;
     }
+
+    // Apply buoyancy
+    velocity.y += buoyancy * dt;
+
+    // Update position based on velocity
     position.add(velocity * dt);
+
+    // Flip character based on movement direction
     _flip(delta.x);
   }
 
@@ -30,16 +41,7 @@ mixin Movable on PositionComponent {
     }
   }
 
-  void _applyGravity(double dt) {
-    velocity.y += gravity * dt;
-    velocity.y = velocity.y.clamp(-terminalVelocity, terminalVelocity);
-    position.y += velocity.y * dt;
-  }
-
   void updatePosition(double dt) {
-    if (!isOnGround) {
-      _applyGravity(dt);
-    }
     position.add(velocity * dt);
   }
 }
