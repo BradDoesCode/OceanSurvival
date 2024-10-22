@@ -20,8 +20,8 @@ abstract class Character extends SpriteAnimationGroupComponent<PlayerState>
   FutureOr<void> onLoad() {
     loadAnimations();
     hitbox = RectangleHitbox(
-      position: Vector2(hitboxOffsetX, hitboxOffsetY),
-      size: Vector2(hitboxWidth, hitboxHeight),
+      //position: Vector2(hitboxOffsetX, hitboxOffsetY),
+      size: Vector2.all(32),
       collisionType: CollisionType.active,
     );
     add(hitbox);
@@ -46,7 +46,7 @@ abstract class Character extends SpriteAnimationGroupComponent<PlayerState>
       final collisionVector = absoluteCenter - mid;
       if (pointA.x == pointB.x || pointA.y == pointB.y) {
         // Hitting a side without touching a corner
-        double penetrationDepth = (hitbox.size.x / 2) - collisionVector.length;
+        double penetrationDepth = (size.x / 2) - collisionVector.length;
         collisionVector.normalize();
         position += collisionVector.scaled(penetrationDepth);
       } else {
@@ -57,7 +57,7 @@ abstract class Character extends SpriteAnimationGroupComponent<PlayerState>
 
   Vector2 _cornerBumpDistance(
       Vector2 directionVector, Vector2 pointA, Vector2 pointB) {
-    var dX = pointA.x - pointB.x;
+    var dX = (pointA.x - size.x) - pointB.x;
     var dY = pointA.y - pointB.y;
     // The order of the two intersection points differs per corner
     // The following if statements negates the necessary values to make the

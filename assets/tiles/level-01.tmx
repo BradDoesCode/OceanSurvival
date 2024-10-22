@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="120" height="67" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="96">
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="120" height="67" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="165">
  <tileset firstgid="1" source="../images/terrain/waves.tsx"/>
  <tileset firstgid="49" source="../images/terrain/water.tsx"/>
  <tileset firstgid="113" source="../images/terrain/Terrain (16x16).tsx"/>
@@ -362,13 +362,8 @@
   <object id="18" name="Player" class="Player" x="176" y="32" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="7" name="collisions">
-  <object id="80" class="platform" x="160" y="64" width="96" height="64"/>
-  <object id="89" x="-16" y="0" width="176" height="128"/>
-  <object id="90" x="256" y="0" width="608" height="128"/>
-  <object id="93" x="0" y="592">
-   <polygon points="0,0 64,0 208,160 592,352 976,480 0,480"/>
-  </object>
-  <object id="94" x="0" y="0" width="16" height="624"/>
-  <object id="95" x="-544" y="288"/>
+  <object id="162" x="0" y="0" width="160" height="128"/>
+  <object id="163" x="160" y="64" width="96" height="64"/>
+  <object id="164" x="256" y="0" width="1664" height="128"/>
  </objectgroup>
 </map>
